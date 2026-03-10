@@ -5,10 +5,16 @@ Slug: teflecher
 Categories: software
 <b>Teflecher</b> — это быстрое, интерактивное, кроссплатформенное приложение-викторина, созданное на основе <b>Kotlin Multiplatform (KMP)</b> и <b>Compose Multiplatform</b>. Оно позволяет пользователям интуитивно загружать викторины из локальных JSON-файлов или удаленных URL-адресов, отвечать на вопросы с несколькими вариантами ответа, мгновенно видеть обратную связь о правильности ответов и отслеживать свои результаты.
 
-Web: https://demensdeum.com/software/teflecher/
-GitHub: https://github.com/zefir1990/teflecher
+Web:
+https://demensdeum.com/software/teflecher/
 
-Также редактор квизов формата Teflecher Editor на основе технологий Ionic + Capacitor
+GitHub:
+https://github.com/zefir1990/teflecher
 
-Web: https://demensdeum.com/software/teflecher-editor/
-GitHub: https://github.com/zefir1990/teflecher-editor
+Также редактор квизов формата Teflecher Editor на основе технологий <b>Ionic + Capacitor</b>
+
+Web:
+https://demensdeum.com/software/teflecher-editor/
+
+GitHub:
+https://github.com/zefir1990/teflecher-editor
