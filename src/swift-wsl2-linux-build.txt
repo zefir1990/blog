@@ -1,0 +1,91 @@
+Format: Fall24-October10
+Language: ru
+Title: Сборка Swift в WSL2 (Linux)
+Slug: swift-wsl2-linux-build
+Categories: techie,tutorials
+
+Экосистема Swift активно развивается за пределами платформ Apple, и сегодня писать на нём под Windows вполне комфортно, используя Windows Subsystem for Linux (WSL2). Стоит учитывать, что для сборок под Linux/WSL доступен облегченный вариант Swift — без проприетарных Apple-фреймворков (таких как SwiftUI, UIKit, AppKit, CoreData, CoreML, ARKit, SpriteKit и других специфичных для iOS/macOS библиотек), однако для консольных утилит и бэкенда этого более чем достаточно. В этой заметке мы шаг за шагом разберём процесс подготовки окружения и сборки компилятора Swift из исходных кодов внутри WSL2 (на примере Ubuntu/Debian).
+
+Обновляем список пакетов и саму систему:
+<pre><code>
+sudo apt update && sudo apt upgrade -y
+</code></pre>
+
+Устанавливаем необходимые зависимости для сборки:
+<pre><code>
+sudo apt install -y \
+  git cmake ninja-build clang python3 python3-pip \
+  libicu-dev libxml2-dev libcurl4-openssl-dev \
+  libedit-dev libsqlite3-dev swig libncurses5-dev \
+  pkg-config tzdata rsync
+</code></pre>
+
+Устанавливаем компилятор и компоновщик (LLVM и LLD):
+<pre><code>
+sudo apt install -y llvm lld
+</code></pre>
+
+Клонируем репозиторий Swift со всеми зависимостями:
+<pre><code>
+git clone https://github.com/apple/swift.git
+cd swift
+utils/update-checkout --clone
+</code></pre>
+
+Устанавливаем `swiftly` и готовый swift с swiftc
+<pre><code>
+curl -O https://download.swift.org/swiftly/linux/swiftly-$(uname -m).tar.gz && \
+tar zxf swiftly-$(uname -m).tar.gz && \
+./swiftly init --quiet-shell-followup && \
+. "${SWIFTLY_HOME_DIR:-$HOME/.local/share/swiftly}/env.sh" && \
+hash -r
+</code></pre>
+
+Запускаем сборку (это займёт продолжительное время):
+<pre><code>
+utils/build-script \
+  --release-debuginfo \
+  --swift-darwin-supported-archs="x86_64" \
+  --llvm-targets-to-build="X86" \
+  --skip-build-benchmarks \
+  --skip-test-cmark \
+  --skip-test-swift \
+  --skip-ios \
+  --skip-tvos \
+  --skip-watchos \
+  --skip-build-libdispatch=false \
+  --skip-build-cmark=false \
+  --skip-build-foundation \
+  --skip-build-lldb \
+  --skip-build-xctest \
+  --skip-test-swift
+</code></pre>
+
+После завершения сборки добавляем путь к компилятору в PATH (укажите ваш путь до папки сборки):
+<pre><code>
+export PATH=/root/Sources/3rdparty/build/Ninja-RelWithDebInfoAssert/swift-linux-x86_64/bin/swiftc:$PATH
+</code></pre>
+
+Проверяем, что установленная версия Swift работает:
+<pre><code>
+swift --version
+</code></pre>
+
+Создаём тестовый файл и запускаем его:
+<pre><code>
+echo "print(\"Hello, World!\")" > hello.swift
+swift hello.swift
+</code></pre>
+
+Также можно скомпилировать бинарный файл и запустить его:
+<pre><code>
+swiftc hello.swift
+./hello
+</code></pre>
+
+<h3>Источники</h3>
+<ul>
+    <li><a href="https://www.swift.org/getting-started/windows/">Getting Started with Swift on Windows</a></li>
+    <li><a href="https://swiftlang.github.io/swiftly/">Swiftly (инструмент для управления версиями)</a></li>
+    <li><a href="https://github.com/apple/swift/blob/main/docs/HowToGuides/GettingStarted.md">Сборка Swift из исходных кодов</a></li>
+</ul>
