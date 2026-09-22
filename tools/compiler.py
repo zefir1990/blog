@@ -139,6 +139,41 @@ outputText = ""
 
 doNotProcessPrefixes = ["[DO NOT PROCESS LINE]", "<img src=", "[video src="]
 
+googleTranslateEndpoint = "https://translate.googleapis.com/translate_a/single"
+googleTranslateImpersonation = "chrome"
+
+def translateWithGoogle(text, source, destination):
+    from curl_cffi import requests as curlRequests
+
+    if source == destination or text.strip() == "":
+        return text
+
+    parameters = {
+        "client": "gtx",
+        "sl": source,
+        "tl": destination,
+        "dt": "t",
+        "q": text,
+    }
+
+    response = curlRequests.get(
+        googleTranslateEndpoint,
+        params=parameters,
+        impersonate=googleTranslateImpersonation,
+        timeout=30
+    )
+
+    if response.status_code != 200:
+        raise RuntimeError(f"Google Translate returned status {response.status_code}")
+
+    segments = response.json()[0]
+    translatedText = "".join(segment[0] for segment in segments if segment and segment[0])
+
+    if translatedText.strip() == "":
+        raise RuntimeError("Google Translate returned empty result")
+
+    return translatedText
+
 def translate(text, type, source, destination):
     if any(text.strip().startswith(prefix) for prefix in doNotProcessPrefixes):
         if text.strip().startswith("[DO NOT PROCESS LINE]"):
@@ -149,20 +184,20 @@ def translate(text, type, source, destination):
     print(f"text: \"{text}\"")
 
     if type == "google":
-        from deep_translator import GoogleTranslator
         print(source)
         print(destination)
-        translator = GoogleTranslator(source=source, target=destination)
+        outputText = None
 
         for i in range(0, 10):
             try:
-                outputText = translator.translate(text)
+                outputText = translateWithGoogle(text, source, destination)
                 break
             except Exception as error:
                 print(error)
-                
-        if outputText == None:
-            outputText = text
+
+        if outputText is None:
+            print(f"Translation failed for target \"{destination}\" after 10 attempts, source text: \"{text}\"")
+            exit(1)
 
         if outputText.strip().lower().startswith("<h2>") and not outputText.strip().lower().endswith("</h2>"):
             outputText += "</h2>"
