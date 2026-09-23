@@ -8,6 +8,10 @@ import os
 import subprocess
 import sys
 
+from dotenv import load_dotenv
+
+load_dotenv()
+
 def askOllama(prompt):
     import requests
 
@@ -78,10 +82,17 @@ def replace_similar_latin_words(text1, text2):
 parser = argparse.ArgumentParser(description="Wordpress post compiler.")
 parser.add_argument("--input", required=True, help="Input file path.")
 parser.add_argument("--output", required=True, help="Output file path.")
+parser.add_argument(
+    "--translator",
+    default="google",
+    choices=["microsoft", "google", "openai", "ollama"],
+    help="Translation backend to use."
+)
 
 args = parser.parse_args()
 inputFile = args.input
 outputFile = args.output
+translatorType = args.translator
 
 inputFileLines = open(inputFile, "r", encoding="utf-8").readlines()
 
@@ -142,6 +153,58 @@ doNotProcessPrefixes = ["[DO NOT PROCESS LINE]", "<img src=", "[video src="]
 googleTranslateEndpoint = "https://translate.googleapis.com/translate_a/single"
 googleTranslateImpersonation = "chrome"
 
+microsoftTranslateEndpoint = "https://api.cognitive.microsofttranslator.com/translate"
+microsoftTranslateApiVersion = "3.0"
+
+class TranslatorConfigurationError(Exception):
+    pass
+
+def translateWithMicrosoft(text, source, destination):
+    import os
+    import requests
+
+    if source == destination or text.strip() == "":
+        return text
+
+    apiKey = os.environ.get("AZURE_TRANSLATOR_KEY")
+    apiRegion = os.environ.get("AZURE_TRANSLATOR_REGION")
+
+    if apiKey is None:
+        raise TranslatorConfigurationError("AZURE_TRANSLATOR_KEY is not set")
+
+    headers = {
+        "Ocp-Apim-Subscription-Key": apiKey,
+        "Content-Type": "application/json",
+    }
+
+    if apiRegion:
+        headers["Ocp-Apim-Subscription-Region"] = apiRegion
+
+    parameters = {
+        "api-version": microsoftTranslateApiVersion,
+        "from": source,
+        "to": destination,
+    }
+
+    response = requests.post(
+        microsoftTranslateEndpoint,
+        params=parameters,
+        headers=headers,
+        json=[{"text": text}],
+        timeout=30
+    )
+
+    if response.status_code != 200:
+        raise RuntimeError(f"Microsoft Translator returned status {response.status_code}: {response.text[:200]}")
+
+    translations = response.json()[0]["translations"]
+    translatedText = "".join(translation["text"] for translation in translations)
+
+    if translatedText.strip() == "":
+        raise RuntimeError("Microsoft Translator returned empty result")
+
+    return translatedText
+
 def translateWithGoogle(text, source, destination):
     from curl_cffi import requests as curlRequests
 
@@ -183,15 +246,22 @@ def translate(text, type, source, destination):
     print(f"translate {source} -> {destination} by {type}")
     print(f"text: \"{text}\"")
 
-    if type == "google":
+    if type == "google" or type == "microsoft":
         print(source)
         print(destination)
         outputText = None
 
         for i in range(0, 10):
             try:
-                outputText = translateWithGoogle(text, source, destination)
+                if type == "google":
+                    outputText = translateWithGoogle(text, source, destination)
+                else:
+                    outputText = translateWithMicrosoft(text, source, destination)
                 break
+            except TranslatorConfigurationError as error:
+                print(f"Translation aborted: {error}")
+                print("Set AZURE_TRANSLATOR_KEY (and AZURE_TRANSLATOR_REGION if your resource needs one) in .env")
+                exit(1)
             except Exception as error:
                 print(error)
 
@@ -259,7 +329,13 @@ lastLineIndex = len(inputFileLines) - 1
 
 languageCodes = ["ru", "en", "zh", "de", "ja", "fr", "pt", "hi"]
 googleTranslateLanguageCodes = ["ru", "en", "zh-CN", "de", "ja", "fr", "pt", "hi"]
+microsoftTranslateLanguageCodes = ["ru", "en", "zh-Hans", "de", "ja", "fr", "pt", "hi"]
 originalLanguageCode = language
+
+if translatorType == "google":
+    translatorLanguageCodes = googleTranslateLanguageCodes
+else:
+    translatorLanguageCodes = microsoftTranslateLanguageCodes
 
 def uploadImage(filename):
     filename = filename.strip()
@@ -295,7 +371,7 @@ def translateTitle(title):
         if languageCodes[i] == originalLanguageCode:
             continue
         output += f"{{:{languageCodes[i]}}}"
-        output += translate(title, "google", originalLanguageCode, googleTranslateLanguageCodes[i])
+        output += translate(title, translatorType, originalLanguageCode, translatorLanguageCodes[i])
         output += "{:}"
 
     return output.replace("\n"," ")
@@ -360,7 +436,7 @@ for languageIndex in range(len(languageCodes)):
 
         else:
             if shouldTranslateLine:
-                translatedText = translate(line, "google", originalLanguageCode, googleTranslateLanguageCodes[languageIndex])
+                translatedText = translate(line, translatorType, originalLanguageCode, translatorLanguageCodes[languageIndex])
                 outputFileDescriptor.write(translatedText)
             else:
                 outputFileDescriptor.write(line)
