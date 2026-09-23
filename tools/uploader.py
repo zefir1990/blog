@@ -182,69 +182,60 @@ except requests.exceptions.ConnectionError as e:
 posts = response.json()
 
 if posts:
-    post_id = posts[0]["id"]
-    # confirm = input(f"Post found: {post_id};\nURL: {site_url}?p={post_id}\nUpdate? (y/n) ")
-    # if confirm != "y":
-    #     print("Not confirmed")
-    #     exit(1)
+    for post in posts:
+        post_id = post["id"]
+        post_url = post.get("link", f"{site_url}?p={post_id}")
+        print(f"Removing old post: ID {post_id}, URL {post_url}")
 
-    update_data = {
-        "title": post_title,
-        "content": content,
-        "categories": category_ids
-    }
-
-    try:
-        update_response = requests.post(
-            f"{api_url_posts}/{post_id}", 
-            headers=post_headers, 
-            json=update_data,
-            timeout=REQUEST_TIMEOUT
-        )
-    except requests.exceptions.Timeout:
-        print(f"Request timed out after {REQUEST_TIMEOUT} seconds")
-        sys.exit(1)
-    except requests.exceptions.ConnectionError as e:
-        print(f"Connection error: {e}")
-        sys.exit(1)
-    if update_response.status_code == 200:
-        print(f"Post updated successfully. ID: {post_id}")
-    else:
-        print(f"Failed to update post: {update_response.status_code}")
         try:
-            error_details = update_response.json()
-            print(f"Error details: {error_details}")
-        except:
-            print(f"Response content: {update_response.text}")
+            delete_response = requests.delete(
+                f"{api_url_posts}/{post_id}",
+                headers=auth_headers,
+                params={"force": "true"},
+                timeout=REQUEST_TIMEOUT
+            )
+        except requests.exceptions.Timeout:
+            print(f"Request timed out after {REQUEST_TIMEOUT} seconds")
+            sys.exit(1)
+        except requests.exceptions.ConnectionError as e:
+            print(f"Connection error: {e}")
+            sys.exit(1)
+
+        if delete_response.status_code != 200:
+            print(f"Failed to remove old post: {delete_response.status_code}")
+            print(f"Response content: {delete_response.text}")
+            sys.exit(1)
+
+        print(f"Old post removed. ID: {post_id}")
+
+create_data = {
+    "title": post_title,
+    "content": content,
+    "slug": slug,
+    "status": "publish",
+    "categories": category_ids
+}
+
+try:
+    create_response = requests.post(
+        api_url_posts,
+        headers=post_headers,
+        json=create_data,
+        timeout=REQUEST_TIMEOUT
+    )
+except requests.exceptions.Timeout:
+    print(f"Request timed out after {REQUEST_TIMEOUT} seconds")
+    sys.exit(1)
+except requests.exceptions.ConnectionError as e:
+    print(f"Connection error: {e}")
+    sys.exit(1)
+if create_response.status_code == 201:
+    new_post_id = create_response.json()["id"]
+    print(f"Post created successfully. ID: {new_post_id}")
 else:
-    create_data = {
-        "title": post_title,
-        "content": content,
-        "slug": slug,
-        "status": "publish",
-        "categories": category_ids
-    }
-
+    print(f"Failed to create post: {create_response.status_code}")
     try:
-        create_response = requests.post(
-            api_url_posts, 
-            headers=post_headers, 
-            json=create_data,
-            timeout=REQUEST_TIMEOUT
-        )
-    except requests.exceptions.Timeout:
-        print(f"Request timed out after {REQUEST_TIMEOUT} seconds")
-        sys.exit(1)
-    except requests.exceptions.ConnectionError as e:
-        print(f"Connection error: {e}")
-        sys.exit(1)
-    if create_response.status_code == 201:
-        new_post_id = create_response.json()["id"]
-        print(f"Post created successfully. ID: {new_post_id}")
-    else:
-        print(f"Failed to create post: {create_response.status_code}")
-        try:
-            error_details = create_response.json()
-            print(f"Error details: {error_details}")
-        except:
-            print(f"Response content: {create_response.text}")
+        error_details = create_response.json()
+        print(f"Error details: {error_details}")
+    except:
+        print(f"Response content: {create_response.text}")
