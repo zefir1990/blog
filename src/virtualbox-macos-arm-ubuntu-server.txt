@@ -1,0 +1,99 @@
+Format: Fall24-October10
+Language: ru
+Title: Установка VirtualBox с гостевыми дополнениями на Mac с процессором ARM
+Slug: virtualbox-macos-arm-ubuntu-server
+Categories: notes
+Инструкция по установке Ubuntu Server в VirtualBox на Mac с процессором ARM64 и подключению гостевых дополнений.
+
+<h2>Установка VirtualBox</h2>
+
+Скачиваем ARM64-сборку VirtualBox, монтируем образ и переносим VirtualBox.app в Applications.
+
+<h2>Настройка виртуальной машины</h2>
+
+Создаём новую машину, указываем тип Linux и версию Ubuntu (64-bit ARM). В настройках задаём:
+
+<ul>
+<li><b>TPM</b> — отключить</li>
+<li><b>UEFI</b> — отключить</li>
+<li><b>Оперативная память</b> — 4096 МБ.</li>
+<li><b>Контроллер графики</b> — VMSVGA (для VBoxLinuxAdditions).</li>
+<li><b>Процессор</b> — 4 ядра.</li>
+</ul>
+
+<h2>Установка Ubuntu Server</h2>
+
+Монтируем ISO-образ Ubuntu Server для ARM64 в привод CD-ROM. В разделе загрузки ставим оптический привод первым в списке. Запускаем машину и проходим установку Ubuntu Server.
+
+<h2>Установка xubuntu-desktop</h2>
+
+Устанавливаем графическое окружение XFCE:
+
+<pre><code>
+sudo apt update
+sudo apt install -y xubuntu-desktop
+</code></pre>
+
+В диалоге выбора менеджера входа выбираем lightdm.
+
+Перезагружаем гостевую систему:
+
+<pre><code>
+sudo reboot
+</code></pre>
+
+<h2>Гостевые дополнения</h2>
+
+После первой загрузки устанавливаем пакеты для сборки модулей ядра:
+
+<pre><code>
+sudo apt update
+sudo apt install -y build-essential linux-headers-$(uname -r)
+</code></pre>
+
+Монтируем диск с гостевыми дополнениями через меню VirtualBox: Устройства → Подключить образ диска Дополнений гостевой ОС. Диск появится внутри гостя в каталоге /media/$USER.
+
+Открываем терминал в Xubuntu, переходим в каталог смонтированного диска и запускаем установщик:
+
+<pre><code>
+cd /media/$USER/*
+sudo ./VBoxLinuxAdditions-arm64.run
+</code></pre>
+
+Перезагружаем гостевую систему:
+
+<pre><code>
+sudo reboot
+</code></pre>
+
+<h2>Что должно работать после установки</h2>
+
+Проверяем, что модули ядра загружены:
+
+<pre><code>
+lsmod | grep vbox
+</code></pre>
+
+В выводе должны быть vboxguest и vboxsf.
+
+Добавляем общую папку в свойствах машины и монтируем её внутри гостя:
+
+<pre><code>
+sudo mkdir -p /media/sf_shared
+sudo mount -t vboxsf shared /media/sf_shared
+</code></pre>
+
+Работающие возможности:
+
+<ul>
+<li><b>Общие папки</b> — каталог хоста виден внутри гостя через vboxsf.</li>
+<li><b>Общий буфер обмена</b> — копирование текста между хостом и гостем.</li>
+<li><b>Интеграция мыши</b> — курсор свободно выходит за пределы окна машины.</li>
+<li><b>Автоматическое изменение разрешения</b> — экран гостя подстраивается под размер окна.</li>
+<li><b>Синхронизация времени</b> — время гостя приводится к времени хоста.</li>
+</ul>
+
+<h2>Источники</h2>
+
+https://www.virtualbox.org/manual/topics/guestadditions.html
+https://forums.virtualbox.org/viewtopic.php?t=112886
