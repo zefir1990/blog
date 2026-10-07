@@ -327,9 +327,9 @@ def processLink(line):
 
 lastLineIndex = len(inputFileLines) - 1
 
-languageCodes = ["ru", "en", "zh", "de", "ja", "fr", "pt", "hi"]
-googleTranslateLanguageCodes = ["ru", "en", "zh-CN", "de", "ja", "fr", "pt", "hi"]
-microsoftTranslateLanguageCodes = ["ru", "en", "zh-Hans", "de", "ja", "fr", "pt", "hi"]
+languageCodes = ["ru", "en", "zh", "de", "ja", "fr", "es", "pt", "hi"]
+googleTranslateLanguageCodes = ["ru", "en", "zh-CN", "de", "ja", "fr", "es", "pt", "hi"]
+microsoftTranslateLanguageCodes = ["ru", "en", "zh-Hans", "de", "ja", "fr", "es", "pt", "hi"]
 originalLanguageCode = language
 
 if translatorType == "google":
