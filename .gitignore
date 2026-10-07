@@ -1,3 +1,5 @@
-build/* 
+build/*
 private/*
 .env
+__pycache__/
+*.pyc

@@ -11,3 +11,7 @@ Title: <Title in russian>
 Slug: <wordpress blog post slug in english>
 Categories: software|notes
 <Post text>
+Code block format is:
+<pre><code>
+print("Hello World")
+</code></pre>

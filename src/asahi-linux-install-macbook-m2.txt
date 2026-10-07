@@ -31,12 +31,14 @@ m2-asahi-linux.jpg
 
 Откройте Terminal в macOS и выполните одну команду:
 
-<pre><code>curl https://alx.sh | sh
+<pre><code>
+curl https://alx.sh | sh
 </code></pre>
 
 Это официальный установщик проекта. Он скачает себя, проверит модель Mac и предложит выбрать дистрибутив. Есть и вариант сразу для Fedora:
 
-<pre><code>curl https://fedora-asahi-remix.org/install | sh
+<pre><code>
+curl https://fedora-asahi-remix.org/install | sh
 </code></pre>
 
 Первый вариант предпочтительнее: через него видно, какие системы доступны сейчас, и в нём же предлагается выбор рабочего стола.
@@ -106,7 +108,8 @@ m2-asahi-linux.jpg
 
 Вывод изображения по USB-C есть в экспериментальной ветке ядра fairydust от команды Asahi Linux. Собирать её вручную долго, поэтому проще воспользоваться скриптом-обёрткой из проекта asahi-fairydust-display:
 
-<pre><code>git clone https://github.com/bharambetejas/asahi-fairydust-display
+<pre><code>
+git clone https://github.com/bharambetejas/asahi-fairydust-display
 cd asahi-fairydust-display
 chmod +x asahi-fairydust-build.sh
 ./asahi-fairydust-build.sh
@@ -116,7 +119,8 @@ chmod +x asahi-fairydust-build.sh
 
 Проверка после загрузки:
 
-<pre><code>uname -r
+<pre><code>
+uname -r
 glxinfo | grep "OpenGL renderer"
 xrandr
 </code></pre>
@@ -135,13 +139,15 @@ xrandr
 
 Выглядит это так. Сначала смотрим UUID нужного раздела:
 
-<pre><code>lsblk -f
+<pre><code>
+lsblk -f
 sudo blkid
 </code></pre>
 
 Затем добавляем строку в /etc/fstab:
 
-<pre><code>UUID=ваш-uuid  /home  ext4  defaults,nofail  0  2
+<pre><code>
+UUID=ваш-uuid  /home  ext4  defaults,nofail  0  2
 </code></pre>
 
 Сам перенос делают копированием: данные переезжают на внешний диск, после чего он монтируется в нужную точку. Чаще так уводят не весь /home, а отдельные тяжёлые каталоги — так меньше риска.

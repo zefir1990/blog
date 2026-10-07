@@ -13,11 +13,9 @@ load_dotenv()
 
 parser = argparse.ArgumentParser(description="Upload or update a WordPress post.")
 parser.add_argument("--post", required=True, help="Path to the post file.")
-parser.add_argument("--blog", required=True, help="Path to the auth file with login and Application Password.")
 
 args = parser.parse_args()
 file_path = args.post
-auth_file = args.blog
 
 REQUEST_TIMEOUT = 60
 
@@ -37,7 +35,10 @@ auth_headers = {
 
 post_headers = {
     "Authorization": f"Basic {auth_token}",
-    "Content-Type": "application/json"
+    "Content-Type": "application/json",
+    # Tells the site to keep the title/content we send: WPGlobus reverts them
+    # on REST updates unless the request carries this header.
+    "X-Blog-Uploader": "1"
 }
 
 def get_all_categories():
@@ -165,7 +166,7 @@ with open(file_path, "r", encoding="utf-8") as file:
 
 category_ids = get_category_ids(category_names)
 
-search_params = {"slug": slug}
+search_params = {"slug": slug, "status": "any"}
 try:
     response = requests.get(
         api_url_posts, 
@@ -179,36 +180,18 @@ except requests.exceptions.Timeout:
 except requests.exceptions.ConnectionError as e:
     print(f"Connection error: {e}")
     sys.exit(1)
+if response.status_code != 200:
+    print(f"Failed to search posts. Status code: {response.status_code}")
+    try:
+        error_details = response.json()
+        print(f"Error details: {error_details}")
+    except:
+        print(f"Response content: {response.text}")
+    sys.exit(1)
+
 posts = response.json()
 
-if posts:
-    for post in posts:
-        post_id = post["id"]
-        post_url = post.get("link", f"{site_url}?p={post_id}")
-        print(f"Removing old post: ID {post_id}, URL {post_url}")
-
-        try:
-            delete_response = requests.delete(
-                f"{api_url_posts}/{post_id}",
-                headers=auth_headers,
-                params={"force": "true"},
-                timeout=REQUEST_TIMEOUT
-            )
-        except requests.exceptions.Timeout:
-            print(f"Request timed out after {REQUEST_TIMEOUT} seconds")
-            sys.exit(1)
-        except requests.exceptions.ConnectionError as e:
-            print(f"Connection error: {e}")
-            sys.exit(1)
-
-        if delete_response.status_code != 200:
-            print(f"Failed to remove old post: {delete_response.status_code}")
-            print(f"Response content: {delete_response.text}")
-            sys.exit(1)
-
-        print(f"Old post removed. ID: {post_id}")
-
-create_data = {
+post_data = {
     "title": post_title,
     "content": content,
     "slug": slug,
@@ -216,26 +199,51 @@ create_data = {
     "categories": category_ids
 }
 
-try:
-    create_response = requests.post(
-        api_url_posts,
-        headers=post_headers,
-        json=create_data,
-        timeout=REQUEST_TIMEOUT
-    )
-except requests.exceptions.Timeout:
-    print(f"Request timed out after {REQUEST_TIMEOUT} seconds")
-    sys.exit(1)
-except requests.exceptions.ConnectionError as e:
-    print(f"Connection error: {e}")
-    sys.exit(1)
-if create_response.status_code == 201:
-    new_post_id = create_response.json()["id"]
-    print(f"Post created successfully. ID: {new_post_id}")
-else:
-    print(f"Failed to create post: {create_response.status_code}")
+def perform_post_request(url, data):
     try:
-        error_details = create_response.json()
+        return requests.post(
+            url,
+            headers=post_headers,
+            json=data,
+            timeout=REQUEST_TIMEOUT
+        )
+    except requests.exceptions.Timeout:
+        print(f"Request timed out after {REQUEST_TIMEOUT} seconds")
+        sys.exit(1)
+    except requests.exceptions.ConnectionError as e:
+        print(f"Connection error: {e}")
+        sys.exit(1)
+
+def print_error_details(prefix, request_response):
+    print(f"{prefix}: {request_response.status_code}")
+    try:
+        error_details = request_response.json()
         print(f"Error details: {error_details}")
     except:
-        print(f"Response content: {create_response.text}")
+        print(f"Response content: {request_response.text}")
+
+if posts:
+    post_id = posts[0]["id"]
+    post_url = posts[0].get("link", f"{site_url}?p={post_id}")
+    print(f"Updating existing post: ID {post_id}, URL {post_url}")
+
+    if len(posts) > 1:
+        duplicate_ids = ", ".join(str(duplicate["id"]) for duplicate in posts[1:])
+        print(f"Warning: {len(posts)} posts share slug '{slug}', updating ID {post_id} and leaving duplicates untouched: {duplicate_ids}")
+
+    update_response = perform_post_request(f"{api_url_posts}/{post_id}", post_data)
+
+    if update_response.status_code == 200:
+        print(f"Post updated successfully. ID: {post_id}, URL: {post_url}")
+    else:
+        print_error_details("Failed to update post", update_response)
+        sys.exit(1)
+else:
+    create_response = perform_post_request(api_url_posts, post_data)
+
+    if create_response.status_code == 201:
+        new_post_id = create_response.json()["id"]
+        print(f"Post created successfully. ID: {new_post_id}")
+    else:
+        print_error_details("Failed to create post", create_response)
+        sys.exit(1)

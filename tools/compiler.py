@@ -402,7 +402,7 @@ for languageIndex in range(len(languageCodes)):
             else:
                 image_path=uploadImage(line)
                 image_line=f"<img src=\"{image_path}\"/>"
-                print(imageLine)
+                print(image_line)
                 outputFileDescriptor.write(image_line)
 
         elif line.startswith("<") and "frame" in line:

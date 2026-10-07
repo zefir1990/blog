@@ -43,8 +43,7 @@ def main():
     print(f"Uploading {output_path}...")
     upload_result = subprocess.run([
         "python3", "./tools/uploader.py",
-        "--post", output_path,
-        "--blog", "./private/wordpress"
+        "--post", output_path
     ])
 
     if upload_result.returncode != 0:
