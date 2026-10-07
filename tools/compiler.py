@@ -7,6 +7,7 @@ import difflib
 import os
 import subprocess
 import sys
+import time
 
 from dotenv import load_dotenv
 
@@ -264,6 +265,10 @@ def translate(text, type, source, destination):
                 exit(1)
             except Exception as error:
                 print(error)
+                # Rate limiting needs a real pause: retrying immediately just
+                # burns the remaining attempts against the same 429.
+                isRateLimited = "429" in str(error)
+                time.sleep(5 * (i + 1) if isRateLimited else 1)
 
         if outputText is None:
             print(f"Translation failed for target \"{destination}\" after 10 attempts, source text: \"{text}\"")
