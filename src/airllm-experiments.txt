@@ -77,6 +77,7 @@ https://github.com/zefir1990/AirLLM-experiments
 <h2>Ссылки</h2>
 
 https://github.com/lyogavin/airllm
+https://github.com/mkamranr/airllm-openai-server
 https://github.com/zefir1990/AirLLM-experiments
 https://pypi.org/project/airllm/
 https://huggingface.co/
