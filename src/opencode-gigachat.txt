@@ -1,6 +1,6 @@
 Format: Fall24-October10
 Language: ru
-Title: Как подключить GigaChat к OpenCode
+Title: Российские AI-провайдеры для OpenCode
 Slug: opencode-gigachat
 Categories: notes
 OpenCode — открытый агент для программирования, который работает прямо в терминале: читает файлы проекта, правит код, запускает команды и тесты, ищет по репозиторию и работает с git. Его сильная сторона в том, что он не привязан к одному поставщику моделей и умеет подключать десятки провайдеров.
@@ -94,13 +94,13 @@ openssl pkcs7 -print_certs -in bundle.p7b -out cert.pem
 
 <h2>Подключение к OpenCode</h2>
 
-Провайдер описывается в конфигурационном файле <b>opencode.json</b>. OpenCode сам скачает и подключит npm-пакет, указанный в поле <b>npm</b>, найдёт в нём фабрику <b>createGigaChat</b> и передаст ей опции. Достаточно перечислить модели по их идентификаторам из API.
+Провайдер описывается в конфигурационном файле <b>opencode.jsonc</b>. OpenCode сам скачает и подключит npm-пакет, указанный в поле <b>npm</b>, найдёт в нём фабрику <b>createGigaChat</b> и передаст ей опции. Достаточно перечислить модели по их идентификаторам из API.
 
 Файл можно разместить в двух местах:
 
 <ul>
-<li><b>Глобально</b> — ~/.config/opencode/opencode.json. Настройки действуют для всех проектов пользователя.</li>
-<li><b>В проекте</b> — opencode.json в корне проекта. Такой конфиг имеет больший приоритет и его безопасно коммитить в git.</li>
+<li><b>Глобально</b> — ~/.config/opencode/opencode.jsonc. Настройки действуют для всех проектов пользователя.</li>
+<li><b>В проекте</b> — opencode.jsonc в корне проекта. Такой конфиг имеет больший приоритет и его безопасно коммитить в git.</li>
 </ul>
 
 Оба файла используют одну схему и объединяются: проектный перекрывает глобальный только по совпадающим ключам, остальные настройки сохраняются. Поддерживается и расширение .jsonc. Если GigaChat нужен лишь в части репозиториев, удобнее держать провайдера в проектном конфиге, а не в глобальном.
@@ -208,6 +208,58 @@ OpenCode проанализирует структуру проекта и со�
 }
 </code></pre>
 
+<h2>DeepSeek и другие модели через Cloud.ru</h2>
+
+У самого GigaChat API моделей DeepSeek нет: там только семейство GigaChat и модели для эмбеддингов. Если в OpenCode нужен именно DeepSeek, но через российский облачный шлюз, подойдёт сервис Foundation Models от Cloud.ru. Он отдаёт модели по OpenAI-совместимому протоколу, поэтому подключается штатным пакетом <b>@ai-sdk/openai-compatible</b>.
+
+В каталоге Cloud.ru Foundation Models есть, например, такие модели:
+
+<pre><code>
+deepseek-ai/DeepSeek-V4.1-Flash
+deepseek-ai/DeepSeek-V4-Flash
+deepseek-ai/DeepSeek-V4-Pro
+</code></pre>
+
+Ключ выпускается в консоли Cloud.ru: раздел Пользователи, вкладка Сервисные аккаунты. Создаём сервисный аккаунт уровня проекта, затем в его учётных данных создаём API-ключ с сервисом Foundation Models. Секрет ключа показывается один раз — его и сохраняем.
+
+Конфигурация провайдера в opencode.json выглядит так:
+
+<pre><code>
+{
+  "$schema": "https://opencode.ai/config.json",
+  "provider": {
+    "cloudru": {
+      "npm": "@ai-sdk/openai-compatible",
+      "name": "Cloud.ru Foundation Models",
+      "options": {
+        "baseURL": "https://foundation-models.api.cloud.ru/v1",
+        "apiKey": "{env:CLOUDRU_API_KEY}"
+      },
+      "models": {
+        "deepseek-ai/DeepSeek-V4.1-Flash": { "name": "DeepSeek V4.1 Flash", "limit": { "context": 1048576, "output": 1048576 } },
+        "deepseek-ai/DeepSeek-V4-Flash": { "name": "DeepSeek V4 Flash", "limit": { "context": 1048576, "output": 1048576 } },
+        "deepseek-ai/DeepSeek-V4-Pro": { "name": "DeepSeek V4 Pro", "limit": { "context": 1048576, "output": 1048576 } }
+      }
+    }
+  }
+}
+</code></pre>
+
+Ключ передаём переменной окружения:
+
+<pre><code>
+export CLOUDRU_API_KEY=ваш_ключ_cloudru
+opencode
+</code></pre>
+
+Сертификаты Минцифры здесь не нужны: у домена api.cloud.ru обычный TLS, в отличие от GigaChat. Зато стоит следить за балансом проекта. При нулевом счёте авторизация проходит, а запросы падают с ответом биллинга:
+
+<pre><code>
+{"message":"Not enough money"}
+</code></pre>
+
+Это не ошибка конфига, а сигнал, что нужно пополнить проект в консоли Cloud.ru.
+
 <h2>На что обратить внимание</h2>
 
 Пара практических моментов, которые чаще всего мешают при первой настройке:
@@ -228,6 +280,7 @@ https://developers.sber.ru/studio/
 https://developers.sber.ru/docs/ru/gigachat/guides/main
 https://github.com/nyddle/gigachat-ai-sdk-provider
 https://github.com/ai-forever/gpt2giga
+https://cloud.ru/docs/foundation-models/ug/topics/quickstart
 
 <h2>Источники</h2>
 
@@ -237,3 +290,5 @@ https://developers.sber.ru/docs/ru/gigachat/models/main
 https://developers.sber.ru/docs/ru/gigachat/guides/selecting-a-model
 https://github.com/nyddle/gigachat-ai-sdk-provider
 https://github.com/ai-forever/gpt2giga
+https://cloud.ru/docs/foundation-models/ug/topics/quickstart
+https://cloud.ru/docs/foundation-models/ug/topics/overview__available__models
