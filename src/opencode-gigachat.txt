@@ -57,7 +57,40 @@ curl -s https://gu-st.ru/content/lending/russian_trusted_sub_ca_pem.crt -o russi
 cat russian_trusted_root_ca_pem.crt russian_trusted_sub_ca_pem.crt > russian_trusted_ca_bundle.pem
 </code></pre>
 
-Файл можно положить в удобное место и указывать его полный путь при запуске агента. Обратите внимание: у скачанных файлов расширение .crt, но содержимое — обычный PEM, дополнительная конвертация не нужна.
+Файл можно положить в удобное место и указывать его полный путь при запуске агента.
+
+Тут есть подвох. Скачанные файлы используют переводы строк CRLF, а у корневого сертификата нет завершающего перевода строки. Поэтому обычный cat склеивает конец первого сертификата и начало второго в одну строку:
+
+<pre><code>
+-----END CERTIFICATE----------BEGIN CERTIFICATE-----
+</code></pre>
+
+LibreSSL — а системный openssl на macOS, напомню, это именно LibreSSL — такой файл не принимает и отвечает ошибкой:
+
+<pre><code>
+PEM routines:CRYPTO_internal:bad end line
+</code></pre>
+
+Значит, одним cat не обойтись. Каждый сертификат нужно сначала прогнать через openssl: он перекодирует его в канонический PEM с переводами строк LF и завершающим переводом строки, и только потом склеивать:
+
+<pre><code>
+openssl x509 -in russian_trusted_root_ca_pem.crt -out russian_trusted_root_ca.pem
+openssl x509 -in russian_trusted_sub_ca_pem.crt -out russian_trusted_sub_ca.pem
+cat russian_trusted_root_ca.pem russian_trusted_sub_ca.pem > russian_trusted_ca_bundle.pem
+</code></pre>
+
+Проверить, что файл читается, можно так:
+
+<pre><code>
+openssl x509 -in russian_trusted_ca_bundle.pem -noout -subject
+</code></pre>
+
+Если сертификаты взяты из другого источника и приходят в формате DER или PKCS#7, их тоже достаточно перекодировать в PEM:
+
+<pre><code>
+openssl x509 -in cert.crt -inform DER -outform PEM -out cert.pem
+openssl pkcs7 -print_certs -in bundle.p7b -out cert.pem
+</code></pre>
 
 <h2>Подключение к OpenCode</h2>
 
@@ -180,7 +213,7 @@ OpenCode проанализирует структуру проекта и со�
 Пара практических моментов, которые чаще всего мешают при первой настройке:
 
 <ul>
-<li><b>Ошибка проверки сертификата.</b> Сообщение про self-signed certificate в цепочке означает, что переменная NODE_EXTRA_CA_CERTS не подхватилась: проверьте путь к PEM-файлу и то, что агент запущен в том же окружении.</li>
+<li><b>Ошибка проверки сертификата.</b> Сообщение про self-signed certificate в цепочке означает, что переменная NODE_EXTRA_CA_CERTS не подхватилась. Проверьте путь к файлу, то, что агент запущен в том же окружении, и сам файл: если при склейке двух сертификатов через cat их концы оказались в одной строке, LibreSSL вернёт bad end line, и bundle нужно пересобрать через openssl, как в разделе про сертификаты.</li>
 <li><b>Ошибка 401.</b> Как правило, это неверный ключ авторизации или несовпадающий scope — для физлица нужен GIGACHAT_API_PERS.</li>
 <li><b>Ошибка 404 с текстом No such model.</b> Это не сбой подключения, а отсутствие доступа к конкретной модели. Уберите её из конфига или замените на доступную. В сообщении вида GigaChat 404: Unknown error виноват тот же ответ GigaChat — провайдер просто не смог разобрать тело ошибки.</li>
 <li><b>Cost.</b> OpenCode не требует подписки: вы платите GigaChat напрямую по факту расхода токенов, поэтому длинные сессии предсказуемы по цене.</li>
