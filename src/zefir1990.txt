@@ -4,11 +4,15 @@ Title: Zefir1990
 Slug: zefir1990
 Categories: about
 zefir1990.jpg
-Zefir1990 - Илья Прохоров, являюсь разработчиком с более чем 15-летним стажем коммерческой разработки. Основатель студии Demens Deum, занимающейся разработкой игр и приложений для мобильных, веб, десктоп систем. Первая 3D OpenGL ES 2 игра  Mad Racer на Android 2 была выпущена в 2010 году, на проекте был программистом и дизайнером игры, также привлек к разработке композитора Антона Дмитриева (coolspotdreamer), после успешного запуска игры занимался заказной разработкой full-time и проектной в рамках контрактов. В числе клиентов - Декатлон, Playboy, Fitbit.
+Разработчик программного обеспечения, специализирующийся на создании современных продуктов: интеграции ИИ и LLM, backend-разработке на TypeScript/Node.js, Flutter/Dart, React/React Native и нативной разработке под iOS, Android, macOS, Windows и Linux. Разрабатываю продукты с нуля — от архитектуры до релиза и дальнейшей поддержки.
 
-Также являюсь автором статей на тему разработки программного обеспечения, игр, паттернов проектирования, алгоритмов, AI, в планах написать книгу об энтропии программного обеспечения.
+Мой путь в программировании начался в пять лет с BASIC на советском клоне ZX Spectrum. В 11 лет создал и запустил первый сайт на HTML и Perl. В дальнейшем работал с PHP, MySQL, Flash, C/C++, Java и современными технологиями.
 
-Предпочитаемые языки программирования: ASM, C, C++, ObjC, Python, Kotlin, Swift, Java, Rust, Go, TypeScript, JavaScript, C#, Dart, PHP.
+Начав карьеру с ремонта компьютеров, перешёл в Mercury Development на позицию Software Engineer, где занимался разработкой для платформ Apple и кроссплатформенными решениями. С тех пор создаю продукты с нуля, участвую в управлении разработкой и сопровождаю коммерческие и внутренние проекты.
+
+Имею опыт системного программирования, разработки драйверов для macOS, embedded-разработки и работы с архитектурами x86, ARM, PowerPC, Motorola 68000, Z80 и MSP430. Автор как минимум трёх VPN-клиентов.
+
+Среди клиентов: Decathlon, Fitbit, Doctis.
 
 LinkedIn: <a href="https://www.linkedin.com/in/zefir1990/" target="_blank">linkedin.com/in/zefir1990</a>
 GitHub: <a href="https://github.com/zefir1990" target="_blank">github.com/zefir1990</a>
@@ -16,9 +20,10 @@ Telegram: <a href="https://t.me/zefir1990" target="_blank">t.me/zefir1990</a>
 Email: <a href="mailto:ceo@demensdeum.com" target="_blank">ceo@demensdeum.com</a>
 Twitch: <a href="https://twitch.tv/zefir1990" target="_blank">twitch.tv/zefir1990</a>
 Youtube: <a href="https://youtube.com/zefir1990" target="_blank">youtube.com/zefir1990</a>
+ArtStation: <a href="https://zefir1990.artstation.com">zefir1990.artstation.com</a>
 <RUONLY>
 Kwork: <a href="https://kwork.ru/in/zefir1990/" target="_blank">https://kwork.ru/in/zefir1990/</a>
 </RUONLY>
 <NOTRU>
-Kwork: <a href="https://kwork.com/in/zefir1990/" target="_blank">https://kwork.com/in/zefir1990/</a>
+Kwork: <a href="https://kwork.com/user/zefir1990/" target="_blank">https://kwork.com/in/zefir1990/</a>
 </NOTRU>
