@@ -1,0 +1,329 @@
+Format: Fall24-October10
+Language: ru
+Title: REA и OpenCode: установка и первое расследование
+Slug: rea-opencode-guide
+Categories: software
+
+REA (Reverse Engineer Anything) — это MCP-сервер, который позволяет проводить реверс-инжиниринг программных приложений, бинарных файлов и поведения в режиме реального времени. Инструмент покрывает путь от поведения приложения до машинного кода, а в роли агента, который им управляет, удобно использовать OpenCode.
+
+OpenCode — открытый агент для программирования, который живёт в терминале. Он читает файлы проекта, правит код, запускает команды и тесты, а главное — поддерживает MCP из коробки, поэтому REA подключается к нему напрямую.
+
+<h2>Что делает REA уникальным</h2>
+
+REA выделяется в области реверс-инжиниринга комплексной поддержкой нескольких платформ и типов анализа:
+
+<ul>
+<li><b>Нативные бинарные файлы</b>: Hopper, Ghidra, IDA или Kuna для дизассемблирования и декомпиляции</li>
+<li><b>JavaScript-приложения и Electron</b>: статический анализ модулей, импортов и границ Electron</li>
+<li><b>Управляемый код</b>: анализ .NET-сборок</li>
+<li><b>Анализ в режиме реального времени</b>: мониторинг поведения процессов</li>
+<li><b>Сетевой трафик</b>: захват и анализ HTTP/S-запросов и ответов</li>
+<li><b>Мобильные приложения</b>: анализ APK и IPA файлов Android и iOS</li>
+<li><b>Встроенное программное обеспечение</b>: анализ embedded-систем и IoT-устройств</li>
+<li><b>Файлы моделей</b>: извлечение метаданных GGUF и safetensors</li>
+<li><b>Объекты GPU-кода</b>: анализ ядер CUDA и HIP</li>
+<li><b>Сохранение игр</b>: восстановление игровой логики и исполняемых файлов</li>
+</ul>
+
+<h2>Основная архитектура и философия</h2>
+
+REA следует трёхэтапному процессу исследования, который делает реверс-инжиниринг доступным для разработчиков:
+
+<ol>
+<li><b>Инспекция</b>: REA подключается к анализирующим инструментам и изучает цели (бинарные файлы, приложения, веб-сайты)</li>
+<li><b>Анализ</b>: прослеживает по коду, определяя правила и поведение</li>
+<li><b>Восстановление</b>: агент использует результаты, чтобы объяснить поведение, построить или протестировать реализацию</li>
+</ol>
+
+Этот процесс позволяет AI-агенту отвечать на сложные вопросы, например: «Пойми, как работает поиск в приложении Notes, покажи мне доказательства и создай аналогичную функцию для моего проекта».
+
+<h2>Практические примеры использования</h2>
+
+<h3>1. Анализ мобильных приложений</h3>
+
+REA может анализировать APK-файлы Android для восстановления:
+
+<ul>
+<li>объявлений и разрешений в манифесте;</li>
+<li>методов и зависимостей классов;</li>
+<li>связей с нативными библиотеками;</li>
+<li>сетевых конечных точек и потоков данных.</li>
+</ul>
+
+Например, анализ Aegis Authenticator показал, как шестизначные коды авторизации меняются каждые 30 секунд: было изучено, как работает генерация кодов по времени (TOTP).
+
+<h3>2. Извлечение функций desktop-приложений</h3>
+
+Анализ кнопки % в Windows Calculator демонстрирует возможности REA:
+
+<ul>
+<li>определение разного поведения в зависимости от контекста (после + или ×);</li>
+<li>разбор ассемблерных инструкций, чтобы понять логику;</li>
+<li>извлечение и объяснение математических операций;</li>
+<li>восстановление правил: «После +: 10% от первого числа» и «После ×: преобразовать 10% в 0,1».</li>
+</ul>
+
+<h3>3. Восстановление API веб-приложений</h3>
+
+REA может записать сеанс браузера и восстановить его в виде RL-среды, где AI-агент отрабатывает задачи вроде работы с папками без запуска исходного приложения.
+
+<h3>4. Восстановление игровой логики</h3>
+
+Кейс с DX-Ball показал, как REA восстановил расчёт звуковой панорамы из игры 1996 года для Windows, реконструировав C-код, который проходит 3205 тестовых случаев и соответствует исходному скомпилированному коду.
+
+<h2>Технические возможности</h2>
+
+<h3>Нативный анализ</h3>
+
+<ul>
+<li>Работает с Hopper, Ghidra, IDA или Kuna для глубокого анализа бинарных файлов</li>
+<li>Поддерживает ELF, PE, Mach-O и другие форматы исполняемых файлов</li>
+<li>Извлекает псевдокод, ассемблер, символы и вызовы</li>
+<li>Выполняет офлайн-анализ без необходимости запускать исходные инструменты</li>
+</ul>
+
+<h3>Анализ JavaScript</h3>
+
+<ul>
+<li>Анализирует приложения Node.js и Electron</li>
+<li>Прослеживает импорты модулей и зависимости</li>
+<li>Захватывает поведение в режиме реального времени через подключение к браузеру</li>
+<li>Извлекает source maps и минифицированный код</li>
+</ul>
+
+<h3>Безопасность</h3>
+
+<ul>
+<li>Статический анализ PE-сертификатов (Authenticode)</li>
+<li>Анализ защитных механизмов (PIE, NX, RELRO, CFG)</li>
+<li>Картирование импортов и DLL</li>
+<li>Анализ отчётов о сбоях (Apple IPS)</li>
+</ul>
+
+<h2>Что возвращает REA</h2>
+
+REA не даёт агенту готовых выводов без основания. Результат каждого запроса — это находки вместе с доказательствами, на которых они построены. В зависимости от цели в ответ попадают:
+
+<ul>
+<li><b>Ссылки на код</b> — конкретные файлы и строки, где реализована исследуемая функция.</li>
+<li><b>Псевдокод и ассемблер</b> — для нативных бинарных файлов: декомпилированные функции, инструкции и связи между вызовами.</li>
+<li><b>Структура приложения</b> — для JavaScript и Electron: модули, импорты, маршруты, IPC и связи с нативными дополнениями.</li>
+<li><b>Метаданные и факты</b> — манифесты, сертификаты, сигнатуры, заголовки форматов и прочие статические данные.</li>
+<li><b>Ограничения</b> — места, которые разобрать не удалось, с пометкой, что именно осталось неизвестным.</li>
+</ul>
+
+Агент использует эти данные, чтобы объяснить поведение, ответить на уточняющие вопросы или собрать и протестировать свою реализацию. Именно наличие доказательств и явных ограничений отличает результат REA от простой догадки модели.
+
+<h2>Перед началом</h2>
+
+Предполагается, что OpenCode уже установлен и в нём подключена модель. Node.js 22.23.4+, 24.22.1+ или 26.12.1+ нужен самому REA, поэтому проверьте версию:
+<pre><code>
+node -v
+</code></pre>
+
+<h2>Шаг 1: Подключение REA к OpenCode</h2>
+
+REA регистрируется в OpenCode как MCP-сервер. Выполните в терминале:
+<pre><code>
+npx rea-agents@latest setup
+</code></pre>
+
+Чтобы сразу указать OpenCode, используйте его идентификатор <code>opencode</code>:
+<pre><code>
+npx rea-agents@latest setup --client opencode
+</code></pre>
+
+<b>Что делает setup:</b>
+
+<ul>
+<li>регистрирует REA как MCP-сервер;</li>
+<li>добавляет инструкции workflow;</li>
+<li>делает резервную копию существующей конфигурации;</li>
+<li>спрашивает подтверждение перед применением изменений.</li>
+</ul>
+
+<b>Важный момент:</b>
+Для первого эксперимента можно пропустить опциональную установку Hopper. После завершения setup перезапустите OpenCode: выйдите из сессии и запустите <code>opencode</code> снова.
+
+Проверьте подключение:
+<pre><code>
+npx -y rea-agents@latest doctor --client opencode --json
+</code></pre>
+Успешный результат: <code>"healthy": true</code>.
+
+Затем спросите у агента:
+<blockquote>«Check that REA is connected and show me which REA tools you can use.»</blockquote>
+
+<h2>Шаг 2: Первое расследование</h2>
+
+REA может анализировать приложения без их запуска.
+
+<ol>
+<li><b>Скачайте пример:</b>
+<pre><code>
+Download https://rea.tools/examples/notes-example.zip
+</code></pre>
+Распакуйте архив в папку <code>notes-example</code>.</li>
+<li><b>Дайте агенту задачу:</b>
+<blockquote>«Use REA to inspect the app at <code>/absolute/path/to/notes-example</code>. Find what happens when I click Export notes. Show where notes.csv is written, which fields it contains, and the relevant files and lines.»</blockquote></li>
+</ol>
+
+<b>Ожидаемый ответ:</b>
+<blockquote>«The button sends a <code>notes:export</code> message. The main process formats the notes as CSV and writes <code>notes.csv</code> in the user's Downloads folder. The columns are <code>id</code> and <code>title</code>.»</blockquote>
+
+<h2>Шаг 3: Установка Ghidra и нативный анализ</h2>
+
+Для анализа нативных бинарных файлов (исполняемых файлов и библиотек) REA использует провайдер анализа. Самый доступный бесплатный вариант — Ghidra от NSA. Инструмент ставится один раз на компьютер, где работает REA.
+
+<h3>Что понадобится</h3>
+
+<ul>
+<li>64-битный JDK 21 или новее, включая компилятор Java (<code>javac</code>).</li>
+<li>Архив Ghidra со страницы релизов.</li>
+</ul>
+
+<h3>Установка</h3>
+
+<ol>
+<li>Установите 64-битный JDK 21 или новее. Выберите пакет под архитектуру компьютера.</li>
+<li>Скачайте Ghidra из списка Assets на странице релизов и распакуйте архив <code>ghidra_…_PUBLIC_….zip</code>. Берите архив релиза, а не «Source code».</li>
+<li>Найдите распакованную папку, в которой лежит <code>ghidraRun</code> или <code>ghidraRun.bat</code>. Этот путь понадобится для переменной <code>GHIDRA_INSTALL_DIR</code>.</li>
+</ol>
+
+Проверьте Java. Первая команда печатает <code>java.home</code> — этот путь нужен для <code>JAVA_HOME</code>. Вторая подтверждает, что компилятор установлен:
+<pre><code>
+java -XshowSettings:properties -version
+javac -version
+</code></pre>
+
+<h3>Подключение Ghidra</h3>
+
+<b>Windows (PowerShell):</b>
+<pre><code>
+$env:GHIDRA_INSTALL_DIR = "C:/tools/ghidra_12.1.4_PUBLIC"
+$env:JAVA_HOME = "C:/tools/jdk-21"
+npx -y rea-agents@latest doctor --provider ghidra --json
+npx -y rea-agents@latest setup
+</code></pre>
+
+<b>macOS / Linux:</b>
+<pre><code>
+export GHIDRA_INSTALL_DIR="/absolute/path/to/ghidra_12.1.4_PUBLIC"
+export JAVA_HOME="/absolute/path/to/jdk-21"
+npx -y rea-agents@latest doctor --provider ghidra --json
+npx -y rea-agents@latest setup
+</code></pre>
+
+Замените пути на свои. Держите команды в одном сеансе терминала: после установки переменных окружения заново запустите setup, подтвердите обновление конфигурации и перезапустите OpenCode.
+
+Проверка провайдера должна вернуть успешный отчёт:
+<pre><code>
+npx -y rea-agents@latest doctor --provider ghidra --json
+</code></pre>
+
+<h3>Пример нативного анализа</h3>
+
+Дайте агенту полный путь к исполняемому файлу и укажите провайдера:
+<blockquote>«Используй REA с настроенным провайдером, чтобы изучить <code>/absolute/path/to/program</code>. Перечисли функции и строки, затем объясни часть, которая обрабатывает пользовательский ввод, со ссылками на код.»</blockquote>
+
+Или выполните команду напрямую из терминала:
+<pre><code>
+npx -y rea-agents@latest function "/absolute/path/to/program" main --provider ghidra --json
+</code></pre>
+Замените <code>main</code> на имя функции или адрес из списка функций целевой программы. Результат содержит псевдокод, ассемблер и ссылки между вызовами.
+
+<h2>Анализ другого типа программного обеспечения</h2>
+
+Выберите категорию целевого программного обеспечения:
+
+<ul>
+<li><b>JavaScript / Electron</b> — нужны Node.js и npm. <a href="https://rea.tools/guides/javascript/">Руководство</a>.</li>
+<li><b>Веб-сайты</b> — нужен браузер Chrome, Chromium или Edge. <a href="https://rea.tools/guides/browser/">Руководство</a>.</li>
+<li><b>Android APK</b> — нужны JADX и JDK 17+. <a href="https://github.com/morluto/rea/blob/main/docs/android-analysis.md">Руководство</a>.</li>
+<li><b>Нативные исполняемые файлы</b> — нужен Hopper, Ghidra или IDA. <a href="https://rea.tools/guides/native/">Руководство</a>.</li>
+<li><b>.NET сборки</b> — нужны Node.js и npm. <a href="https://github.com/morluto/rea/blob/main/docs/managed-code-analysis.md">Руководство</a>.</li>
+</ul>
+
+<h2>Использование REA из терминала</h2>
+
+<h3>Статический анализ JavaScript/Electron приложения</h3>
+<pre><code>
+npx -y rea-agents@latest analyze-javascript-application "/absolute/path/to/app" --json
+</code></pre>
+<i>Замените путь на папку с приложением или файлом .asar.</i>
+
+<b>Где найти .asar файл Electron-приложения:</b>
+<ul>
+<li><b>Windows:</b> <code>C:\Users\&lt;you&gt;\AppData\Local\Programs\&lt;App&gt;\resources\app.asar</code></li>
+<li><b>macOS:</b> <code>/Applications/&lt;App&gt;.app/Contents/Resources/app.asar</code></li>
+<li><b>Linux:</b> <code>/opt/&lt;App&gt;/resources/app.asar</code></li>
+</ul>
+
+<h3>Глобальная установка команды rea</h3>
+<pre><code>
+npm install --global rea-agents
+</code></pre>
+После этого доступна команда <code>rea --help</code>.
+
+<h3>Установка через curl (macOS / Linux)</h3>
+<pre><code>
+curl -fsSL https://raw.githubusercontent.com/morluto/rea/main/install.sh | bash
+</code></pre>
+После установки следуйте инструкциям по настройке агента. Если меню настройки не появляется, выполните <code>rea setup</code>.
+
+<h2>Обновление и удаление</h2>
+
+<h3>Обновление REA</h3>
+<pre><code>
+npx rea-agents@latest setup
+</code></pre>
+<i>Для глобальной установки: <code>rea update</code></i>
+
+<h3>Удаление REA</h3>
+<pre><code>
+npx rea-agents@latest uninstall
+</code></pre>
+
+<h2>Получение помощи</h2>
+
+<ul>
+<li><b>FAQ</b>: <a href="https://rea.tools/faq/">rea.tools/faq/</a> — быстрые ответы об обновлениях, агентах и анализе</li>
+<li><b>Гайды</b>: <a href="https://rea.tools/guides/">rea.tools/guides/</a> — примеры для бинарного, Electron и браузерного анализа</li>
+<li><b>GitHub Issues</b>: <a href="https://github.com/morluto/rea/issues">github.com/morluto/rea/issues</a> — сообщите о проблеме</li>
+<li><b>Дискорд</b>: <a href="https://discord.gg/GkcryMnJDM">discord.gg/GkcryMnJDM</a> — вопросы, расследования и работа в процессе</li>
+</ul>
+
+<h2>Типичные проблемы</h2>
+
+<h3>OpenCode не видит REA</h3>
+Перезапустите OpenCode после setup. Используйте команду <code>doctor</code> для проверки соединения:
+<pre><code>
+npx -y rea-agents@latest doctor --client opencode --json
+</code></pre>
+
+<h3>Провайдеру требуется настройка</h3>
+Для Ghidra выполните:
+<pre><code>
+npx -y rea-agents@latest doctor --provider ghidra --json
+</code></pre>
+Отчёт покажет неудачную проверку и предложенный следующий шаг.
+
+<h3>Windows, WSL и пути с пробелами</h3>
+<ul>
+<li>Используйте PowerShell для Windows-клиентов</li>
+<li>Если агент работает внутри WSL, установите Node.js и REA внутри этой Linux-системы и используйте Linux-пути</li>
+<li>В терминале заключайте пути с пробелами в кавычки</li>
+</ul>
+
+<h3>Настройка Hopper на macOS</h3>
+Если macOS запрашивает разрешение на автоматизацию, разрешите приложение, запускающее REA, в системных настройках: Системные настройки → Конфиденциальность и безопасность → Автоматизация, затем повторите попытку.
+
+<h2>Ссылки</h2>
+
+https://github.com/morluto/rea
+https://rea.tools/
+https://rea.tools/get-started/
+https://rea.tools/guides/
+https://opencode.ai/
+https://opencode.ai/docs/
+https://opencode.ai/docs/mcp-servers/
