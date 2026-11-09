@@ -237,11 +237,11 @@ npx -y rea-agents@latest function "/absolute/path/to/program" main --provider gh
 Выберите категорию целевого программного обеспечения:
 
 <ul>
-<li><b>JavaScript / Electron</b> — нужны Node.js и npm. <a href="https://rea.tools/guides/javascript/">Руководство</a>.</li>
-<li><b>Веб-сайты</b> — нужен браузер Chrome, Chromium или Edge. <a href="https://rea.tools/guides/browser/">Руководство</a>.</li>
-<li><b>Android APK</b> — нужны JADX и JDK 17+. <a href="https://github.com/morluto/rea/blob/main/docs/android-analysis.md">Руководство</a>.</li>
-<li><b>Нативные исполняемые файлы</b> — нужен Hopper, Ghidra или IDA. <a href="https://rea.tools/guides/native/">Руководство</a>.</li>
-<li><b>.NET сборки</b> — нужны Node.js и npm. <a href="https://github.com/morluto/rea/blob/main/docs/managed-code-analysis.md">Руководство</a>.</li>
+<li><b>JavaScript / Electron</b> — нужны Node.js и npm. <a href="https://rea.tools/guides/javascript/" target="_blank" rel="noopener">Руководство</a>.</li>
+<li><b>Веб-сайты</b> — нужен браузер Chrome, Chromium или Edge. <a href="https://rea.tools/guides/browser/" target="_blank" rel="noopener">Руководство</a>.</li>
+<li><b>Android APK</b> — нужны JADX и JDK 17+. <a href="https://github.com/morluto/rea/blob/main/docs/android-analysis.md" target="_blank" rel="noopener">Руководство</a>.</li>
+<li><b>Нативные исполняемые файлы</b> — нужен Hopper, Ghidra или IDA. <a href="https://rea.tools/guides/native/" target="_blank" rel="noopener">Руководство</a>.</li>
+<li><b>.NET сборки</b> — нужны Node.js и npm. <a href="https://github.com/morluto/rea/blob/main/docs/managed-code-analysis.md" target="_blank" rel="noopener">Руководство</a>.</li>
 </ul>
 
 <h2>Использование REA из терминала</h2>
@@ -287,10 +287,10 @@ npx rea-agents@latest uninstall
 <h2>Получение помощи</h2>
 
 <ul>
-<li><b>FAQ</b>: <a href="https://rea.tools/faq/">rea.tools/faq/</a> — быстрые ответы об обновлениях, агентах и анализе</li>
-<li><b>Гайды</b>: <a href="https://rea.tools/guides/">rea.tools/guides/</a> — примеры для бинарного, Electron и браузерного анализа</li>
-<li><b>GitHub Issues</b>: <a href="https://github.com/morluto/rea/issues">github.com/morluto/rea/issues</a> — сообщите о проблеме</li>
-<li><b>Дискорд</b>: <a href="https://discord.gg/GkcryMnJDM">discord.gg/GkcryMnJDM</a> — вопросы, расследования и работа в процессе</li>
+<li><b>FAQ</b>: <a href="https://rea.tools/faq/" target="_blank" rel="noopener">rea.tools/faq/</a> — быстрые ответы об обновлениях, агентах и анализе</li>
+<li><b>Гайды</b>: <a href="https://rea.tools/guides/" target="_blank" rel="noopener">rea.tools/guides/</a> — примеры для бинарного, Electron и браузерного анализа</li>
+<li><b>GitHub Issues</b>: <a href="https://github.com/morluto/rea/issues" target="_blank" rel="noopener">github.com/morluto/rea/issues</a> — сообщите о проблеме</li>
+<li><b>Дискорд</b>: <a href="https://discord.gg/GkcryMnJDM" target="_blank" rel="noopener">discord.gg/GkcryMnJDM</a> — вопросы, расследования и работа в процессе</li>
 </ul>
 
 <h2>Типичные проблемы</h2>
