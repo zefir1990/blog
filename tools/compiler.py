@@ -308,6 +308,84 @@ def translate(text, type, source, destination):
         print(answer)
         return answer
 
+localizedTagPattern = re.compile(r"<(RUONLY|NOTRU)>(.*?)</\1>", re.DOTALL)
+localizationTagTokenPattern = re.compile(r"<(/?)(RUONLY|NOTRU)>")
+
+def fragmentIncluded(fragmentKind, targetLanguageCode):
+    if fragmentKind == "text":
+        return True
+    if fragmentKind == "RUONLY":
+        return targetLanguageCode == "ru"
+    if fragmentKind == "NOTRU":
+        return targetLanguageCode != "ru"
+    return False
+
+def lineIncluded(fragments, targetLanguageCode):
+    for fragmentKind, fragmentText in fragments:
+        if fragmentKind == "text":
+            return True
+        if fragmentText.strip() == "":
+            continue
+        if fragmentIncluded(fragmentKind, targetLanguageCode):
+            return True
+    return False
+
+def parseLocalizedLines(lines):
+    parsedLines = []
+    currentMode = "text"
+
+    for line in lines:
+        fragments = []
+        position = 0
+        hasTag = False
+
+        for match in localizationTagTokenPattern.finditer(line):
+            hasTag = True
+            if match.start() > position:
+                fragments.append((currentMode, line[position:match.start()]))
+            currentMode = "text" if match.group(1) == "/" else match.group(2)
+            position = match.end()
+
+        if position < len(line):
+            fragments.append((currentMode, line[position:]))
+
+        if not fragments:
+            fragments.append(("text", ""))
+
+        if hasTag and all(fragmentText.strip() == "" for _, fragmentText in fragments):
+            continue
+
+        parsedLines.append((line, fragments))
+
+    return parsedLines
+
+def renderLocalizedFragments(fragments, type, source, destination, targetLanguageCode):
+    outputParts = []
+
+    for fragmentKind, fragmentText in fragments:
+        fragmentText = fragmentText.rstrip("\r\n")
+        if fragmentText == "":
+            continue
+        if fragmentKind == "text":
+            outputParts.append(translate(fragmentText, type, source, destination))
+        elif fragmentKind == "RUONLY" and targetLanguageCode == "ru":
+            outputParts.append(fragmentText)
+        elif fragmentKind == "NOTRU" and targetLanguageCode != "ru":
+            outputParts.append(translate(fragmentText, type, source, destination))
+
+    return "".join(outputParts)
+
+def translateLineWithLocalization(text, type, source, destination, targetLanguageCode):
+    if not localizedTagPattern.search(text):
+        return translate(text, type, source, destination)
+
+    parsedLines = parseLocalizedLines([text])
+
+    if not parsedLines:
+        return ""
+
+    return renderLocalizedFragments(parsedLines[0][1], type, source, destination, targetLanguageCode)
+
 codeEscapedSymbols = [
     ("<","&lt;"),
     (">","&gt;"),
@@ -371,12 +449,16 @@ def translateTitle(title):
             return title[len("[DO NOT PROCESS LINE]"):]
         return title
           
-    output = f"{{:{originalLanguageCode}}}{title}{{:}}"
+    originalLanguageIndex = languageCodes.index(originalLanguageCode)
+    output = f"{{:{originalLanguageCode}}}"
+    output += translateLineWithLocalization(title, translatorType, originalLanguageCode, translatorLanguageCodes[originalLanguageIndex], originalLanguageCode)
+    output += "{:}"
+
     for i in range(len(languageCodes)):
         if languageCodes[i] == originalLanguageCode:
             continue
         output += f"{{:{languageCodes[i]}}}"
-        output += translate(title, translatorType, originalLanguageCode, translatorLanguageCodes[i])
+        output += translateLineWithLocalization(title, translatorType, originalLanguageCode, translatorLanguageCodes[i], languageCodes[i])
         output += "{:}"
 
     return output.replace("\n"," ")
@@ -388,12 +470,17 @@ outputFileDescriptor.write("\n")
 outputFileDescriptor.write(",".join(categories))
 outputFileDescriptor.write("\n")
 
+parsedInputFileLines = parseLocalizedLines(inputFileLines)
+
 for languageIndex in range(len(languageCodes)):
     targetLanguageCode = languageCodes[languageIndex]
     outputFileDescriptor.write(f"{{:{targetLanguageCode}}}")
     shouldTranslateLine = True
     codeBlock = False
-    for lineIndex, line in enumerate(inputFileLines):
+    for lineIndex, (line, fragments) in enumerate(parsedInputFileLines):
+        if not lineIncluded(fragments, targetLanguageCode):
+            continue
+
         if line.startswith("[DO NOT PROCESS LINE]"):
             outputFileDescriptor.write(line[len("[DO NOT PROCESS LINE]"):])
 
@@ -441,7 +528,7 @@ for languageIndex in range(len(languageCodes)):
 
         else:
             if shouldTranslateLine:
-                translatedText = translate(line, translatorType, originalLanguageCode, translatorLanguageCodes[languageIndex])
+                translatedText = renderLocalizedFragments(fragments, translatorType, originalLanguageCode, translatorLanguageCodes[languageIndex], targetLanguageCode)
                 outputFileDescriptor.write(translatedText)
             else:
                 outputFileDescriptor.write(line)
