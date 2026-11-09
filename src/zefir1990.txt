@@ -16,3 +16,9 @@ Telegram: <a href="https://t.me/zefir1990" target="_blank">t.me/zefir1990</a>
 Email: <a href="mailto:ceo@demensdeum.com" target="_blank">ceo@demensdeum.com</a>
 Twitch: <a href="https://twitch.tv/zefir1990" target="_blank">twitch.tv/zefir1990</a>
 Youtube: <a href="https://youtube.com/zefir1990" target="_blank">youtube.com/zefir1990</a>
+<RUONLY>
+Kwork: <a href="https://kwork.ru/in/zefir1990/" target="_blank">https://kwork.ru/in/zefir1990/</a>
+</RUONLY>
+<NOTRU>
+Kwork: <a href="https://kwork.com/in/zefir1990/" target="_blank">https://kwork.com/in/zefir1990/</a>
+</NOTRU>
