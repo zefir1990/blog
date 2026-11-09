@@ -2,7 +2,7 @@ Format: Fall24-October10
 Language: ru
 Title: REA и OpenCode: установка и первое расследование
 Slug: rea-opencode-guide
-Categories: software
+Categories: notes
 
 REA (Reverse Engineer Anything) — это MCP-сервер, который позволяет проводить реверс-инжиниринг программных приложений, бинарных файлов и поведения в режиме реального времени. Инструмент покрывает путь от поведения приложения до машинного кода, а в роли агента, который им управляет, удобно использовать OpenCode.
 
