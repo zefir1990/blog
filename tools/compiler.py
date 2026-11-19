@@ -402,7 +402,7 @@ def processLine(line, state):
 def processLink(line):
     outputLine = line.replace("http://", "https://")
     outputLine = outputLine.strip()
-    outputLine = f"<a href=\"{outputLine}\" rel=\"noopener\" target=\"_blank\">{outputLine}</a>"
+    outputLine = f"<p><a href=\"{outputLine}\" rel=\"noopener\" target=\"_blank\">{outputLine}</a></p>"
 
     return outputLine
 

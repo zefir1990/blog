@@ -16,7 +16,7 @@ DEFAULT_SITE_URL = "https://zefir1990.space"
 EDITOR_KEY_HEADER = "rusty-blogger-post-editor-key"
 
 TITLE_PATTERN = re.compile(r"\{:([A-Za-z0-9_-]+)\}(.*?)\{:\}", re.DOTALL)
-SECTION_START_PATTERN = re.compile(r"^\{:([A-Za-z0-9_-]+)\}$")
+SECTION_START_PATTERN = re.compile(r"^\{:([A-Za-z0-9_-]+)\}(.*)$")
 SECTION_END_PATTERN = re.compile(r"^\{:\}$")
 
 
@@ -68,12 +68,15 @@ def parse_sections(lines: List[str]) -> Dict[str, str]:
     current_lines: List[str] = []
     for line in lines:
         stripped_line = line.strip()
-        start_match = SECTION_START_PATTERN.match(stripped_line)
+        start_match = SECTION_START_PATTERN.match(line.lstrip())
         if start_match:
             if current_language is not None:
                 raise ValueError(f"language section {current_language} is not closed")
             current_language = start_match.group(1).strip().lower()
             current_lines = []
+            remainder = start_match.group(2)
+            if remainder:
+                current_lines.append(remainder)
             continue
         if SECTION_END_PATTERN.match(stripped_line):
             if current_language is not None:
