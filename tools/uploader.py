@@ -1,249 +1,221 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-import requests
-import sys
 import argparse
-import base64
-import time
-from dotenv import load_dotenv
+import json
 import os
-
-load_dotenv()
-
-parser = argparse.ArgumentParser(description="Upload or update a WordPress post.")
-parser.add_argument("--post", required=True, help="Path to the post file.")
-
-args = parser.parse_args()
-file_path = args.post
+import re
+import sys
+import urllib.error
+import urllib.parse
+import urllib.request
+from typing import Dict, List, Optional, Tuple
 
 REQUEST_TIMEOUT = 60
+DEFAULT_SITE_URL = "https://zefir1990.space"
+EDITOR_KEY_HEADER = "rusty-blogger-post-editor-key"
 
-site_url = os.environ["SITE_URL"]
-username = os.environ["SITE_USER"]
-app_password = os.environ["SITE_PASSWORD"]
+TITLE_PATTERN = re.compile(r"\{:([A-Za-z0-9_-]+)\}(.*?)\{:\}", re.DOTALL)
+SECTION_START_PATTERN = re.compile(r"^\{:([A-Za-z0-9_-]+)\}$")
+SECTION_END_PATTERN = re.compile(r"^\{:\}$")
 
-auth_token = base64.b64encode(f"{username}:{app_password}".encode()).decode()
 
-api_url_posts = f"{site_url}/wp-json/wp/v2/posts"
-api_url_categories = f"{site_url}/wp-json/wp/v2/categories"
+class BlogApiError(Exception):
+    pass
 
-auth_headers = {
-    "Authorization": f"Basic {auth_token}",
-    "Accept": "application/json"
-}
 
-post_headers = {
-    "Authorization": f"Basic {auth_token}",
-    "Content-Type": "application/json",
-    # Tells the site to keep the title/content we send: WPGlobus reverts them
-    # on REST updates unless the request carries this header.
-    "X-Blog-Uploader": "1"
-}
+def load_environment_file(directory: str) -> None:
+    path = os.path.join(directory, ".env")
+    if not os.path.isfile(path):
+        return
+    with open(path, "r", encoding="utf-8") as file:
+        for line in file:
+            stripped_line = line.strip()
+            if not stripped_line or stripped_line.startswith("#") or "=" not in stripped_line:
+                continue
+            name, value = stripped_line.split("=", 1)
+            name = name.strip()
+            value = value.strip().strip('"').strip("'")
+            if name and name not in os.environ:
+                os.environ[name] = value
 
-def get_all_categories():
-    categories = []
-    page = 1
-    max_pages = 10
-    
-    while page <= max_pages:
-        print(f"Fetching categories page {page}...")
-        try:
-            print(api_url_categories)
-            response = requests.get(
-                api_url_categories, 
-                headers=auth_headers, 
-                params={"per_page": 100, "page": page},
-                timeout=REQUEST_TIMEOUT
-            )
-            print(f"Response received: {response.status_code}")
-        except requests.exceptions.Timeout:
-            print(f"Request timed out after {REQUEST_TIMEOUT} seconds")
-            sys.exit(1)
-        except requests.exceptions.ConnectionError as e:
-            print(f"Connection error: {e}")
-            sys.exit(1)
-            
-        if response.status_code == 200:
-            try:
-                data = response.json()
-                # Debug the actual structure of the data
-                print(f"Data type: {type(data)}")
-                if isinstance(data, list):
-                    print(f"Received {len(data)} categories on page {page}")
-                    if len(data) > 0:
-                        print(f"First category structure: {type(data[0])}")
-                        # Print first category keys if it's a dictionary
-                        if isinstance(data[0], dict):
-                            print(f"First category keys: {data[0].keys()}")
-                else:
-                    print(f"Data is not a list but: {type(data)}")
-                    print(f"Data content: {data}")
-                
-                if not data:
-                    print("No more categories found, breaking loop")
-                    break
-                    
-                # Make sure we're adding the right kind of data
-                if isinstance(data, list):
-                    categories.extend(data)
-                else:
-                    # If it's not a list, try to handle it appropriately
-                    print("Warning: Expected a list of categories but received something else")
-                    # If it's a dict with 'categories' key, use that
-                    if isinstance(data, dict) and 'categories' in data:
-                        categories.extend(data['categories'])
-                    # Otherwise just append it
-                    else:
-                        categories.append(data)
-                
-                # Check if we've received fewer items than requested per_page
-                # This means we've reached the last page
-                if isinstance(data, list) and len(data) < 100:
-                    print("Last page reached (fewer than 100 items returned)")
-                    break
-            except Exception as e:
-                print(f"Error parsing JSON: {e}")
-                print(f"Response content: {response.text[:500]}...")
-                break
-                
-            page += 1
-        else:
-            print(f"Failed to fetch categories. Status code: {response.status_code}")
-            try:
-                error_details = response.json()
-                print(f"Error details: {error_details}")
-            except:
-                print(f"Response content: {response.text}")
-            sys.exit(1)
+
+def parse_categories(line: str) -> List[str]:
+    value = line.strip()
+    if value.startswith("Categories:"):
+        value = value[len("Categories:"):]
+    categories: List[str] = []
+    for raw_category in re.split(r"[,|]", value):
+        category = raw_category.strip().lower()
+        if category and category not in categories:
+            categories.append(category)
     return categories
 
-def get_category_ids(category_names):
-    all_categories = get_all_categories()
-    print(f"Total categories fetched: {len(all_categories)}")
-    # If we have any categories, print the first one as example
-    if len(all_categories) > 0:
-        print(f"Example category data: {all_categories[0]}")
-    
-    category_ids = []
-    for name in category_names:
-        print(f"Looking for category: '{name}'")
-        found = False
-        for category in all_categories:
-            # Make sure category is a dictionary before accessing keys
-            if isinstance(category, dict) and 'slug' in category:
-                if category['slug'].lower() == name.lower().strip():
-                    category_ids.append(category['id'])
-                    found = True
-                    print(f"Found category '{name}' with ID {category['id']}")
-                    break
-            elif isinstance(category, str):
-                # If category is a string, compare directly
-                if category.lower() == name.lower().strip():
-                    # We might not have an ID if it's just a string
-                    # In this case we'll use the name as the ID
-                    print(f"Category '{name}' is a string, not an object with ID")
-                    category_ids.append(name)
-                    found = True
-                    break
-            else:
-                print(f"Unexpected category type: {type(category)}")
-        if not found:
-            print(f"Category '{name}' not found.")
-            sys.exit(1)
-    return category_ids
 
-with open(file_path, "r", encoding="utf-8") as file:
-    lines = file.readlines()
+def parse_titles(title_line: str) -> Dict[str, str]:
+    titles: Dict[str, str] = {}
+    for match in TITLE_PATTERN.finditer(title_line):
+        language = match.group(1).strip().lower()
+        title = match.group(2).strip()
+        if language and title:
+            titles[language] = title
+    return titles
+
+
+def parse_sections(lines: List[str]) -> Dict[str, str]:
+    sections: Dict[str, str] = {}
+    current_language: Optional[str] = None
+    current_lines: List[str] = []
+    for line in lines:
+        stripped_line = line.strip()
+        start_match = SECTION_START_PATTERN.match(stripped_line)
+        if start_match:
+            if current_language is not None:
+                raise ValueError(f"language section {current_language} is not closed")
+            current_language = start_match.group(1).strip().lower()
+            current_lines = []
+            continue
+        if SECTION_END_PATTERN.match(stripped_line):
+            if current_language is not None:
+                sections[current_language] = "\n".join(current_lines).strip()
+                current_language = None
+                current_lines = []
+            continue
+        if current_language is not None:
+            current_lines.append(line)
+    if current_language is not None:
+        raise ValueError(f"language section {current_language} is not closed")
+    return sections
+
+
+def parse_compiled_post(path: str) -> Tuple[str, List[str], Dict[str, str], Dict[str, str]]:
+    with open(path, "r", encoding="utf-8") as file:
+        lines = file.read().splitlines()
     if len(lines) < 4:
-        print("File must contain at least four lines: slug, title, categories, and content.")
-        sys.exit(1)
-    
+        raise ValueError("compiled post must contain slug, title, categories and a language section")
     slug = lines[0].strip()
-    post_title = lines[1].strip()
-    category_names = lines[2].strip().split(",")
-    content = ''.join(lines[3:]).strip()
+    if not slug:
+        raise ValueError("compiled post slug is empty")
+    categories = parse_categories(lines[2])
+    titles = parse_titles(lines[1])
+    sections = parse_sections(lines[3:])
+    if not sections:
+        raise ValueError("compiled post contains no language sections")
+    return slug, categories, titles, sections
 
-category_ids = get_category_ids(category_names)
 
-search_params = {"slug": slug, "status": "any"}
-try:
-    response = requests.get(
-        api_url_posts, 
-        headers=auth_headers, 
-        params=search_params,
-        timeout=REQUEST_TIMEOUT
-    )
-except requests.exceptions.Timeout:
-    print(f"Request timed out after {REQUEST_TIMEOUT} seconds")
-    sys.exit(1)
-except requests.exceptions.ConnectionError as e:
-    print(f"Connection error: {e}")
-    sys.exit(1)
-if response.status_code != 200:
-    print(f"Failed to search posts. Status code: {response.status_code}")
+def request_json(
+    method: str,
+    url: str,
+    headers: Optional[Dict[str, str]] = None,
+    payload: Optional[dict] = None,
+) -> Tuple[int, str]:
+    data = None
+    request_headers = {"Accept": "application/json"}
+    if headers:
+        request_headers.update(headers)
+    if payload is not None:
+        data = json.dumps(payload).encode("utf-8")
+        request_headers["Content-Type"] = "application/json"
+    request = urllib.request.Request(url, data=data, headers=request_headers, method=method)
     try:
-        error_details = response.json()
-        print(f"Error details: {error_details}")
-    except:
-        print(f"Response content: {response.text}")
-    sys.exit(1)
+        with urllib.request.urlopen(request, timeout=REQUEST_TIMEOUT) as response:
+            return response.status, response.read().decode("utf-8")
+    except urllib.error.HTTPError as error:
+        return error.code, error.read().decode("utf-8", errors="replace")
 
-posts = response.json()
 
-post_data = {
-    "title": post_title,
-    "content": content,
-    "slug": slug,
-    "status": "publish",
-    "categories": category_ids
-}
+class RustyBloggerClient:
+    def __init__(self, site_url: str, editor_key: str) -> None:
+        self.site_url = site_url.rstrip("/")
+        self.editor_key = editor_key
 
-def perform_post_request(url, data):
-    try:
-        return requests.post(
-            url,
-            headers=post_headers,
-            json=data,
-            timeout=REQUEST_TIMEOUT
+    def existing_post(self, slug: str, language: str) -> Optional[dict]:
+        encoded_slug = urllib.parse.quote(slug, safe="")
+        query = urllib.parse.urlencode({"lang": language})
+        status, body = request_json(
+            "GET",
+            f"{self.site_url}/api/posts/{encoded_slug}?{query}",
         )
-    except requests.exceptions.Timeout:
-        print(f"Request timed out after {REQUEST_TIMEOUT} seconds")
-        sys.exit(1)
-    except requests.exceptions.ConnectionError as e:
-        print(f"Connection error: {e}")
-        sys.exit(1)
+        if status == 404:
+            return None
+        if status != 200:
+            raise BlogApiError(f"GET failed: {status} {body[:200]}")
+        post = json.loads(body)
+        if post.get("language") != language:
+            return None
+        return post
 
-def print_error_details(prefix, request_response):
-    print(f"{prefix}: {request_response.status_code}")
+    def upsert_post(self, post: dict) -> None:
+        existing_post = self.existing_post(post["slug"], post["language"])
+        encoded_slug = urllib.parse.quote(post["slug"], safe="")
+        write_headers = {EDITOR_KEY_HEADER: self.editor_key}
+        if existing_post is None:
+            status, body = request_json(
+                "POST",
+                f"{self.site_url}/api/posts",
+                headers=write_headers,
+                payload=post,
+            )
+        else:
+            post["published_unix_seconds"] = existing_post.get("published_unix_seconds")
+            post["published_date"] = existing_post.get("published_date")
+            status, body = request_json(
+                "PUT",
+                f"{self.site_url}/api/posts/{encoded_slug}",
+                headers=write_headers,
+                payload=post,
+            )
+        if status not in (200, 201):
+            raise BlogApiError(f"write failed: {status} {body[:200]}")
+
+
+def main() -> int:
+    parser = argparse.ArgumentParser(description="Create or update RustyBlogger post variants.")
+    parser.add_argument("--post", required=True, help="Path to the compiled post file.")
+    args = parser.parse_args()
+
+    repository_directory = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    load_environment_file(repository_directory)
+
+    site_url = os.environ.get("RUSTY_BLOGGER_SITE_URL", DEFAULT_SITE_URL)
+    editor_key = os.environ.get("RUSTY_BLOGGER_POST_EDITOR_KEY", "").strip()
+    if not editor_key:
+        print("RUSTY_BLOGGER_POST_EDITOR_KEY is not set", file=sys.stderr)
+        return 1
+
     try:
-        error_details = request_response.json()
-        print(f"Error details: {error_details}")
-    except:
-        print(f"Response content: {request_response.text}")
+        slug, categories, titles, sections = parse_compiled_post(args.post)
+    except (OSError, ValueError) as error:
+        print(error, file=sys.stderr)
+        return 1
 
-if posts:
-    post_id = posts[0]["id"]
-    post_url = posts[0].get("link", f"{site_url}?p={post_id}")
-    print(f"Updating existing post: ID {post_id}, URL {post_url}")
+    client = RustyBloggerClient(site_url, editor_key)
+    failures = 0
+    for language, body_html in sections.items():
+        title = titles.get(language)
+        if not title:
+            print(f"{language}: skipped, title is missing", file=sys.stderr)
+            failures += 1
+            continue
+        post = {
+            "slug": slug,
+            "language": language,
+            "title": title,
+            "categories": categories,
+            "body_html": body_html,
+            "source_path": f"{slug}.txt",
+        }
+        try:
+            client.upsert_post(post)
+        except (BlogApiError, OSError, urllib.error.URLError) as error:
+            print(f"{language}: failed: {error}", file=sys.stderr)
+            failures += 1
+        else:
+            print(f"{language}: uploaded")
 
-    if len(posts) > 1:
-        duplicate_ids = ", ".join(str(duplicate["id"]) for duplicate in posts[1:])
-        print(f"Warning: {len(posts)} posts share slug '{slug}', updating ID {post_id} and leaving duplicates untouched: {duplicate_ids}")
+    return 1 if failures else 0
 
-    update_response = perform_post_request(f"{api_url_posts}/{post_id}", post_data)
 
-    if update_response.status_code == 200:
-        print(f"Post updated successfully. ID: {post_id}, URL: {post_url}")
-    else:
-        print_error_details("Failed to update post", update_response)
-        sys.exit(1)
-else:
-    create_response = perform_post_request(api_url_posts, post_data)
-
-    if create_response.status_code == 201:
-        new_post_id = create_response.json()["id"]
-        print(f"Post created successfully. ID: {new_post_id}")
-    else:
-        print_error_details("Failed to create post", create_response)
-        sys.exit(1)
+if __name__ == "__main__":
+    sys.exit(main())

@@ -1,11 +1,10 @@
 import sys
 import subprocess
 import argparse
-import os
 
 def main():
     parser = argparse.ArgumentParser(
-        description="Compile and upload source files to WordPress."
+        description="Compile and upload source files to RustyBlogger."
     )
     parser.add_argument(
         "filename",
@@ -27,7 +26,7 @@ def main():
         print(f"Compiling {input_path}...")
 
         compile_result = subprocess.run([
-            "python3", "./tools/compiler.py",
+            sys.executable, "./tools/compiler.py",
             "--input", input_path,
             "--output", output_path
         ])
@@ -42,7 +41,7 @@ def main():
 
     print(f"Uploading {output_path}...")
     upload_result = subprocess.run([
-        "python3", "./tools/uploader.py",
+        sys.executable, "./tools/uploader.py",
         "--post", output_path
     ])
 

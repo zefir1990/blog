@@ -5,8 +5,6 @@ import argparse
 import re
 import difflib
 import os
-import subprocess
-import sys
 import time
 
 from dotenv import load_dotenv
@@ -420,28 +418,16 @@ if translatorType == "google":
 else:
     translatorLanguageCodes = microsoftTranslateLanguageCodes
 
+mediaBaseUrl = os.environ.get("RUSTY_BLOGGER_MEDIA_BASE_URL", "/media").rstrip("/")
+
 def uploadImage(filename):
     filename = filename.strip()
-    print(f"Uploading image: {filename}")
-
-    script_path = os.path.join(".", "tools", "mediaUploader.py")
-
-    result = subprocess.run(
-        [sys.executable, script_path, filename],
-        capture_output=True,
-        text=True,
-        check=True
-    )
-
-    uploaded_path = result.stdout.strip()
-
-    if not uploaded_path:
-        print(f"Warning: mediaUploader.py returned empty string for {filename}")
-        return filename
-
-    print(f"uploaded_path: {uploaded_path}")
-
-    return uploaded_path
+    basename = os.path.basename(filename)
+    if not os.path.isfile(os.path.join(".", "media", basename)):
+        print(f"Warning: media file not found: {basename}")
+    mediaUrl = f"{mediaBaseUrl}/{basename}"
+    print(f"Media: {basename} -> {mediaUrl}")
+    return mediaUrl
 
 def translateTitle(title):  
     if any(title.startswith(prefix) for prefix in doNotProcessPrefixes):
