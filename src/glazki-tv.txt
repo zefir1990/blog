@@ -27,7 +27,7 @@ Glazki TV — это современный, высокопроизводите�
 </ul>
 
 Веб версия:
-https://demensdeum.com/software/glazki-tv/
+https://zefir1990.github.io/glazki-tv/
 
 Google Play версия:
 https://play.google.com/store/apps/details?id=com.demensdeum.glazkitv

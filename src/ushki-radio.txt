@@ -5,8 +5,8 @@ Slug: ushki-radio
 Categories: software
 Ushki-Radio — это кроссплатформенный радиоплеер для онлайн-радио, сделанный с упором на простоту и удовольствие от прослушивания. Без лишних функций, без перегруженных интерфейсов — просто включил и слушаешь.
 
-https://demensdeum.com/software/ushki-radio|ushki-radio-logo-2.png
-https://demensdeum.com/software/ushki-radio
+https://zefir1990.github.io/Ushki-Radio/|ushki-radio-logo-2.png
+https://zefir1990.github.io/Ushki-Radio/
 
 Проект использует открытую базу Radio Browser, благодаря чему в приложении доступны тысячи радиостанций со всего мира. Их можно искать по названию, жанрам или популярности, добавлять в избранное и быстро возвращаться к любимым станциям.
 
@@ -17,7 +17,7 @@ Ushki-Radio отлично подходит именно для роли фон�
 Ushki-Radio — это хороший пример того, каким может быть современный интернет-радиоплеер: открытый, лёгкий, расширяемый и ориентированный в первую очередь на слушателя. Проект распространяется под лицензией MIT и отлично подойдёт как для личного использования, так и как база для собственных экспериментов с аудио-приложениями.
 
 Веб версия:
-https://demensdeum.com/software/ushki-radio
+https://zefir1990.github.io/Ushki-Radio/
 
 GitHub:
 https://github.com/demensdeum/Ushki-Radio

@@ -3,19 +3,11 @@ Language: ru
 Title: Teflecher
 Slug: teflecher
 Categories: software
-https://demensdeum.com/software/teflecher/|teflecher.jpg
+https://zefir1990.space/posts/teflecher|teflecher.jpg
 <b>Teflecher</b> — это быстрое, интерактивное, кроссплатформенное приложение-квиз, созданное на основе <b>Kotlin Multiplatform (KMP)</b> и <b>Compose Multiplatform</b>. Оно позволяет пользователям интуитивно загружать викторины из локальных JSON-файлов или удаленных URL-адресов, отвечать на вопросы с несколькими вариантами ответа, мгновенно видеть обратную связь о правильности ответов и отслеживать свои результаты.
 
 Web:
-https://demensdeum.com/software/teflecher/
+https://zefir1990.github.io/teflecher/
 
 GitHub:
 https://github.com/zefir1990/teflecher
-
-Также редактор квизов формата Teflecher Editor на основе технологий <b>Ionic + Capacitor</b>
-
-Web:
-https://demensdeum.com/software/teflecher-editor/
-
-GitHub:
-https://github.com/zefir1990/teflecher-editor

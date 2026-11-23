@@ -3,7 +3,7 @@ Language: ru
 Title: Ghost Contacts
 Slug: ghost-contacts
 Categories: software
-https://demensdeum.com/software/ghost-contacts/|ghost-contacts-2.jpg
+https://zefir1990.github.io/GhostContacts/|ghost-contacts-2.jpg
 <strong>Ghost Contacts</strong> — это простое веб-приложение, созданное с целью скрыть ваши контакты от стандартных системных API и телефонных книг. Вся информация хранится исключительно локально в вашем браузере и не передается на внешние сервера.
 
 <h2>Основные возможности</h2>
@@ -15,7 +15,7 @@ https://demensdeum.com/software/ghost-contacts/|ghost-contacts-2.jpg
 </ul>
 
 Приложение онлайн:
-https://demensdeum.com/software/ghost-contacts/
+https://zefir1990.github.io/GhostContacts/
 
 GitHub:
 https://github.com/demensdeum/GhostContacts
