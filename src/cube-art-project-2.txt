@@ -3,7 +3,7 @@ Language: ru
 Title: Cube Art Project 2
 Slug: cube-art-project-2
 Categories: games
-https://demensdeum.com/software/cube-art-project-2/|cube-art-project2.jpg
+https://zefir1990.github.io/cube-art-project-2/|cube-art-project2.jpg
 
 Добро пожаловать в <strong>Cube Art Project 2</strong> — медитативный трехмерный холст, где вы можете дать волю своему воображению. Создавайте воксельные картины, экспериментируйте с цветами и воплощайте уникальные 3D-модели прямо в вашем браузере.
 
@@ -29,7 +29,7 @@ https://demensdeum.com/software/cube-art-project-2/|cube-art-project2.jpg
 </ul>
 
 Играть:
-https://demensdeum.com/software/cube-art-project-2/
+https://zefir1990.github.io/cube-art-project-2/
 
 GitHub:
 https://github.com/zefir1990/cube-art-project-2
