@@ -43,4 +43,4 @@ Mama Calendar — это полнофункциональное кросспла
 
 <h2>Ссылки</h2>
 https://github.com/zefir1990/Mama-Calendar
-https://demensdeum.com/software/mama-calendar/events
+https://zefir1990.github.io/Mama-Calendar
