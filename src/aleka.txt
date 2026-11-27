@@ -81,7 +81,7 @@ Flutter позволяет писать одно приложение для ш�
 <h2>Попробовать</h2>
 
 Aleka доступна в вебе и как нативное приложение:
-<p><a href="https://demensdeum.com/software/aleka/"><b>demensdeum.com/software/aleka/</b></a></p>
+<p><a href="https://zefir1990.github.io/Aleka/"><b>zefir1990.github.io/Aleka/</b></a></p>
 
 Исходный код открыт под лицензией MIT:
 <p><a href="https://github.com/demensdeum/Aleka"><b>github.com/demensdeum/Aleka</b></a></p>
