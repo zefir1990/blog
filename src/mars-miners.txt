@@ -3,7 +3,7 @@ Language: ru
 Title: Mars Miners
 Slug: mars-miners
 Categories: games
-https://demensdeum.com/games/mars-miners/|mars-miners-v2.jpg
+https://zefir1990.github.io/mars-miners/|mars-miners-v2.jpg
 
 В суровых условиях красной планеты каждая секунда и каждый сектор на счету. Мы рады представить <strong>Mars Miners</strong> — пошаговую стратегическую игру, где вам предстоит бороться за выживание колонии и контроль над ценными марсианскими ресурсами.
 
@@ -20,4 +20,4 @@ https://demensdeum.com/games/mars-miners/|mars-miners-v2.jpg
     <li><strong>Продвинутый ИИ</strong>: ведите борьбу за ресурсы против умных автоматонов, которые не прощают тактических ошибок.</li>
 </ul>
 
-<strong><a href="https://demensdeum.com/games/mars-miners/">Играть в Mars Miners</a></strong>
+<strong><a href="https://zefir1990.github.io/mars-miners/">Играть в Mars Miners</a></strong>
