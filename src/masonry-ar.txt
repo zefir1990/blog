@@ -3,7 +3,7 @@ Language: ru
 Title: Masonry AR
 Slug: masonry-ar
 Categories: games
-https://demensdeum.com/games/masonry-ar/client/|masonry-ar.jpg
+https://zefir1990.github.io/Masonry-AR-Singleplayer/|masonry-ar.jpg
 
 <strong>Masonry AR</strong> — это геолокационная многопользовательская игра с элементами дополненной реальности (AR), погружающая вас в мир тайных обществ. Исследуйте улицы вашего города, собирайте масонские книги знаний, основывайте собственные ложи и соревнуйтесь за влияние на карте реального мира.
 
@@ -18,7 +18,7 @@ https://demensdeum.com/games/masonry-ar/client/|masonry-ar.jpg
 </ul>
 
 Играть:
-https://demensdeum.com/games/masonry-ar/client/
+https://zefir1990.github.io/Masonry-AR-Singleplayer/
 
 GitHub:
-https://github.com/zefir1990/Masonry-AR
+https://github.com/zefir1990/Masonry-AR-Singleplayer
