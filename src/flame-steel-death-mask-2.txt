@@ -3,7 +3,7 @@ Language: ru
 Title: Flame Steel: Death Mask 2
 Slug: flame-steel-death-mask-2
 Categories: games
-https://demensdeum.com/games/flame-steel-death-mask-2|technomaze.jpg
+https://zefir1990.github.io/Flame-Steel-Death-Mask-2/|technomaze.jpg
 
 В бескрайних, залитых холодным светом коридорах индустриальной мегаструктуры вас ждет новое испытание. Мы рады представить <strong>Flame Steel: Death Mask 2</strong> — трехмерный dungeon crawler, сочетающий классическую эстетику с современным игровым процессом в реальном времени.
 
@@ -30,4 +30,4 @@ https://demensdeum.com/games/flame-steel-death-mask-2|technomaze.jpg
     <li><strong>Инфраструктура</strong>: MongoDB для постоянного хранения данных и Redis для пространственного индексирования в реальном времени.</li>
 </ul>
 
-<strong><a href="https://demensdeum.com/games/flame-steel-death-mask-2">Играть в Flame Steel: Death Mask 2</a></strong></p>
+<strong><a href="https://zefir1990.github.io/Flame-Steel-Death-Mask-2/">Играть в Flame Steel: Death Mask 2</a></strong></p>
